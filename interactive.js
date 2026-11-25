@@ -18,7 +18,7 @@
       { k: "R", label: "Load resistance", unit: "Ω", min: 0.001, max: 100000 } ] },
     { title: "Protection limits", fields: [
       { k: "Qmin", label: "Minimum flow", unit: "m³/s", min: 0, max: 100 },
-      { k: "Pmin", label: "Minimum inlet pressure", unit: "Pa", min: 0, max: 1e8 },
+      { k: "Pmin", label: "Minimum outlet pressure", unit: "Pa", min: 0, max: 1e8 },
       { k: "Vmax", label: "Maximum voltage", unit: "V", min: 0.1, max: 100000 },
       { k: "Imax", label: "Maximum current", unit: "A", min: 0.1, max: 100000 } ] },
     { title: "Battery and DC load", fields: [
@@ -211,7 +211,7 @@
     var ul = make("ul", "checks");
     var c0 = s.checks;
     ul.appendChild(checkRow(c0.flow, "Flow " + trimNum(state.Q0, 5) + " vs minimum " + trimNum(state.Qmin, 5) + " m³/s"));
-    ul.appendChild(checkRow(c0.pressure, "Inlet pressure " + fmtGrouped(state.Pin) + " vs minimum " + fmtGrouped(state.Pmin) + " Pa"));
+    ul.appendChild(checkRow(c0.pressure, "Outlet pressure " + fmtGrouped(state.Pout) + " vs minimum " + fmtGrouped(state.Pmin) + " Pa"));
     ul.appendChild(checkRow(c0.voltage, "Voltage " + s.V.toFixed(1) + " vs maximum " + trimNum(state.Vmax, 2) + " V"));
     ul.appendChild(checkRow(c0.current, "Current " + s.I.toFixed(1) + " vs maximum " + trimNum(state.Imax, 2) + " A"));
     prot.insertBefore(ul, prot.querySelector(".vals"));
@@ -220,7 +220,7 @@
     if (res.tripChecks) {
       var why = [];
       if (!res.tripChecks.flow) why.push("flow below minimum");
-      if (!res.tripChecks.pressure) why.push("inlet pressure below minimum");
+      if (!res.tripChecks.pressure) why.push("outlet pressure below minimum");
       if (!res.tripChecks.voltage) why.push("voltage above maximum");
       if (!res.tripChecks.current) why.push("current above maximum");
       note.textContent = "First trip cause: " + why.join(", ") + ". Output is off for " + Math.round(res.offFraction * 100) + "% of the run.";

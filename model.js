@@ -8,7 +8,7 @@
     Pin: 360000, Pout: 335000,       // inlet / outlet pressure (Pa)
     etaT: 0.75, rpm: 1500,           // turbine efficiency, speed
     etaG: 0.90, R: 1.536,            // generator efficiency, load resistance (ohm)
-    Qmin: 0.41667, Pmin: 300000,     // protection: minimum flow, minimum inlet pressure
+    Qmin: 0.41667, Pmin: 300000,     // protection: minimum flow, minimum outlet pressure
     Vmax: 150, Imax: 90,             // protection: maximum voltage, maximum current
     cap: 0.216, soc0: 50,            // battery capacity (kWh), starting charge (%)
     load: 30, maxChg: 43.2, etaC: 0.9, // DC load (W), charging power limit (W), charging efficiency
@@ -28,7 +28,7 @@
     var V = I * p.R;
     var checks = {
       flow: q >= p.Qmin,
-      pressure: p.Pin >= p.Pmin,
+      pressure: p.Pout >= p.Pmin,
       voltage: V <= p.Vmax,
       current: I <= p.Imax
     };
