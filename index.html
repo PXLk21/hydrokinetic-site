@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hydrokinetic Simulation Hub</title>
+<meta name="description" content="AI-Based Early Fault Detection for In-Pipe Hydrokinetic Energy Harvesting: simulation model, diagrams and results. Capstone project, Jubail Industrial College.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%230066cc%27/%3E%3Cpath d=%27M5 19c3.5-4 7.5-4 11 0s7.5 4 11 0%27 fill=%27none%27 stroke=%27%23fff%27 stroke-width=%273%27 stroke-linecap=%27round%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a full-screen centred title that fades as you scroll; the options then slide in as a single centred list. */
+:root {
+  --bg: #f5f5f7;
+  --card: #ffffff;
+  --ink: #1d1d1f;
+  --muted: #6e6e73;
+  --line: #d2d2d7;
+  --accent: #0066cc;
+  --accent-ink: #ffffff;
+  --bad: #c4291c;
+  --warn: #8a5a00;
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Segoe UI", Roboto, Arial, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", "Segoe UI", Roboto, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a0a0b; --card: #1c1c1e; --ink: #f5f5f7; --muted: #a1a1a6;
+    --line: #3a3a3c; --accent: #2997ff; --accent-ink: #00152e; --bad: #ff8a80; --warn: #ffcc66;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0a0a0b; --card: #1c1c1e; --ink: #f5f5f7; --muted: #a1a1a6;
+  --line: #3a3a3c; --accent: #2997ff; --accent-ink: #00152e; --bad: #ff8a80; --warn: #ffcc66;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+main { max-width: 720px; margin: 0 auto; padding: 0 16px 64px; display: flex; flex-direction: column; gap: 28px; }
+
+/* Landing */
+.hero {
+  position: relative; min-height: 100vh; min-height: 100svh;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  padding: 48px 20px 96px; overflow: hidden;
+  background: radial-gradient(70% 55% at 50% 0%, rgba(0, 102, 204, .11), transparent 70%);
+  background: radial-gradient(70% 55% at 50% 0%, color-mix(in srgb, var(--accent) 11%, transparent), transparent 70%);
+  --p: 0;
+}
+.hero-inner {
+  max-width: 1100px; display: flex; flex-direction: column; align-items: center; gap: 22px;
+  opacity: calc(1 - var(--p) * 1.25); transform: translateY(calc(var(--p) * -48px)) scale(calc(1 - var(--p) * 0.05));
+  will-change: transform, opacity;
+}
+.kicker { font-size: 14px; font-weight: 600; letter-spacing: .02em; color: var(--accent); }
+.hero h1 {
+  margin: 0; font-family: var(--font-display); font-weight: 600; letter-spacing: -0.028em; line-height: 1.06;
+  font-size: clamp(34px, 7.2vw, 84px); text-wrap: balance;
+}
+.hero h1 .nb { white-space: nowrap; }
+.hero .tagline { margin: 0; font-size: clamp(17px, 2.4vw, 24px); color: var(--muted); max-width: 34ch; line-height: 1.35; }
+.cue {
+  position: absolute; left: 50%; bottom: 28px; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  background: none; border: 0; color: var(--muted); font: inherit; font-size: 13px; cursor: pointer; padding: 8px 14px;
+  opacity: calc(1 - var(--p) * 3);
+}
+.cue svg { width: 22px; height: 22px; animation: bob 2s ease-in-out infinite; }
+.cue:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+
+/* Intro above the list */
+.intro { display: flex; flex-direction: column; gap: 10px; padding-top: 72px; }
+.intro h2 { margin: 0; font-family: var(--font-display); font-weight: 600; letter-spacing: -0.022em; line-height: 1.1; font-size: clamp(30px, 6vw, 48px); text-wrap: balance; }
+.intro p { margin: 0; color: var(--muted); font-size: clamp(17px, 2.2vw, 21px); max-width: 40ch; line-height: 1.4; }
+
+/* Scroll reveal: only armed by script, so the page stays fully visible without it */
+.js-reveal .reveal { opacity: 0; transform: translateY(32px); transition: opacity .8s ease, transform .8s cubic-bezier(.2, .7, .2, 1); }
+.js-reveal .reveal.in { opacity: 1; transform: none; }
+
+.links { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.item { background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.head {
+  width: 100%; display: flex; align-items: center; gap: 12px; text-align: left;
+  background: none; border: 0; color: inherit; font: inherit; cursor: pointer;
+  padding: 16px 18px; min-height: 64px;
+}
+.head:hover { background: rgba(0, 102, 204, .07); background: color-mix(in srgb, var(--accent) 7%, transparent); }
+.head:focus-visible, .btn:focus-visible, .lb-close:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
+.titles { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.title { font-weight: 600; font-size: 17px; line-height: 1.3; }
+.sub { font-size: 14px; color: var(--muted); line-height: 1.4; }
+.tag {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 2px 9px; white-space: nowrap;
+}
+.chev { flex: none; width: 20px; height: 20px; color: var(--muted); transition: transform .2s ease; }
+.item.open .chev { transform: rotate(180deg); }
+
+.panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .25s ease; }
+.item.open .panel { grid-template-rows: 1fr; }
+.panel > div { overflow: hidden; min-height: 0; }
+.body { padding: 4px 18px 18px; display: flex; flex-direction: column; gap: 14px; border-top: 1px solid var(--line); margin-top: 0; }
+.item:not(.open) .body { border-top-color: transparent; }
+.body { padding-top: 16px; }
+.shot {
+  display: block; width: 100%; padding: 0; border: 1px solid var(--line); border-radius: 8px;
+  background: #fff; cursor: zoom-in; overflow: hidden;
+}
+.shot img { display: block; width: 100%; height: auto; }
+.note { margin: 0; font-size: 15px; max-width: 60ch; }
+.fine { margin: 0; font-size: 13px; color: var(--muted); max-width: 60ch; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; border-radius: 8px;
+  padding: 9px 14px; border: 1px solid var(--accent); background: transparent; color: var(--accent);
+}
+a.btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); }
+.btn:hover { filter: brightness(1.08); }
+.status { font-size: 13px; color: var(--muted); min-height: 1.4em; margin: 0; }
+.spec { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0; font-size: 14px; }
+.spec dt { color: var(--muted); }
+.spec dd { margin: 0; font-family: var(--font-mono); font-size: 13px; }
+footer { font-size: 13px; color: var(--muted); max-width: 56ch; }
+
+.lb { position: fixed; top: 0; right: 0; bottom: 0; left: 0; inset: 0; background: rgba(5, 14, 17, .92); display: none; flex-direction: column; z-index: 10; }
+.lb.show { display: flex; }
+.lb-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 16px; color: #e6f0ef; font-size: 14px; }
+.lb-close { background: #e6f0ef; color: #0c1a1f; border: 0; border-radius: 8px; padding: 8px 14px; font: inherit; font-weight: 600; cursor: pointer; }
+.lb-scroll { flex: 1; overflow: auto; padding: 0 16px 16px; }
+.lb-scroll img { display: block; background: #fff; border-radius: 6px; max-width: none; width: max(100%, var(--lbw, 1300px)); height: auto; }
+
+/* Interactive model */
+.presets { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font: inherit; font-size: 14px; cursor: pointer; border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 999px; padding: 7px 14px; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.chip:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.grp { border: 1px solid var(--line); border-radius: 10px; margin: 0; padding: 10px 14px 14px; min-width: 0; }
+.grp legend { padding: 0 6px; font-weight: 600; font-size: 14px; }
+#try-form { display: flex; flex-direction: column; gap: 12px; }
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px 16px; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field label { font-size: 13px; color: var(--muted); }
+.inline { display: flex; align-items: center; gap: 8px; }
+.field input {
+  width: 100%; min-width: 0; font: inherit; font-family: var(--font-mono); font-size: 14px; color: var(--ink);
+  background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px;
+}
+.field input:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+.field input[aria-invalid="true"] { border-color: var(--bad); }
+.unit { font-size: 12px; color: var(--muted); white-space: nowrap; min-width: 3.2em; }
+.hint { font-size: 12px; color: var(--muted); }
+.msg { font-size: 12px; color: var(--bad); min-height: 0; }
+.banner { margin: 0; padding: 10px 14px; border-radius: 8px; font-size: 14px; border: 1px solid var(--line); }
+.banner.error { border-color: var(--bad); color: var(--bad); }
+.stages { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.stage { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.stage h4 { margin: 0; font-size: 13px; letter-spacing: .02em; color: var(--muted); font-weight: 600; }
+.vals { display: grid; grid-template-columns: 1fr; gap: 0; margin: 0; }
+.vals dt { font-size: 12px; color: var(--muted); margin-top: 6px; }
+.vals dd { margin: 0; font-family: var(--font-mono); font-size: 14px; }
+.vals dd.big { font-size: 20px; font-weight: 500; color: var(--accent); }
+.badge { margin: 0; font-size: 13px; font-weight: 600; padding: 6px 10px; border-radius: 8px; border: 1px solid currentColor; }
+.badge.pass { color: var(--accent); }
+.badge.fail { color: var(--bad); }
+.checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.chk { display: flex; gap: 8px; font-size: 13px; line-height: 1.35; }
+.chk .mark { flex: none; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; border-radius: 4px; padding: 1px 6px; height: fit-content; border: 1px solid currentColor; }
+.chk.pass .mark { color: var(--accent); }
+.chk.fail .mark { color: var(--bad); }
+.fine.warn { color: var(--bad); }
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.charts figure { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.charts figcaption { font-size: 13px; font-weight: 600; }
+.charts canvas { width: 100%; height: 190px; display: block; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+.legend { font-size: 12px; color: var(--muted); margin: 0; }
+
+/* Apple-style rows */
+.links { gap: 14px; }
+.item { border-radius: 20px; border: 0; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 28px rgba(0,0,0,.06); }
+:root[data-theme="dark"] .item { box-shadow: none; border: 1px solid var(--line); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .item { box-shadow: none; border: 1px solid var(--line); } }
+.head { padding: 22px 24px; min-height: 84px; }
+.title { font-family: var(--font-display); font-size: 21px; font-weight: 600; letter-spacing: -0.01em; }
+.sub { font-size: 15px; }
+.tag { font-family: var(--font-body); font-size: 11px; font-weight: 600; letter-spacing: .05em; border: 0; background: rgba(0, 102, 204, .12); background: color-mix(in srgb, var(--accent) 12%, transparent); padding: 4px 10px; }
+.body { padding-left: 24px; padding-right: 24px; }
+footer { padding-top: 8px; text-align: center; margin-inline: auto; }
+footer .credit { display: inline-block; margin-top: 10px; }
+@media (prefers-reduced-motion: reduce) { .hero-inner, .cue { opacity: 1 !important; transform: none !important; } .cue { transform: translateX(-50%) !important; } .cue svg { animation: none; } html { scroll-behavior: auto; } .js-reveal .reveal { opacity: 1; transform: none; transition: none; } }
+@media (prefers-reduced-motion: reduce) { .panel, .chev { transition: none; } }
+@media (max-width: 420px) { .tag { display: none; } }
+</style>
+</head>
+<body>
+<section class="hero" id="hero" aria-label="Project title">
+  <div class="hero-inner">
+    <span class="kicker">Capstone project · Jubail Industrial College</span>
+    <h1><span class="nb">AI-Based</span> Early Fault Detection for <span class="nb">In-Pipe</span> Hydrokinetic Energy Harvesting</h1>
+    <p class="tagline">Simulation model, diagrams and results.</p>
+  </div>
+  <button class="cue" type="button" id="cue" aria-label="Scroll down to the project options"><span>Scroll</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+</section>
+
+<main id="explore">
+  <div class="intro reveal">
+    <h2>Explore the project.</h2>
+    <p>Open a title to see the model, try your own numbers, or look through the results.</p>
+  </div>
+
+  <ul class="links" id="links">
+    <li class="item reveal" data-id="diagram">
+      <button class="head" type="button" aria-expanded="false" aria-controls="p-diagram">
+        <span class="titles"><span class="title">Block diagram</span><span class="sub">Signal flow from pipe pressure to battery and DC load</span></span>
+        <span class="tag">Diagram</span>
+        <svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg>
+      </button>
+      <div class="panel" id="p-diagram" inert><div><div class="body">
+        <button class="shot" type="button" data-zoom="diagram.png" data-w="2000" data-label="Block diagram" aria-label="Open the block diagram full size"><img src="diagram.png" alt="Block diagram of the Simulink model in seven panels: pipeline hydraulic power, turbine, generator, protection system, total energy, battery storage and DC source transfer switch." loading="lazy"></button>
+        <p class="note">Seven panels follow the model: pipeline, turbine, generator, protection, total energy, battery storage and the automatic DC source transfer switch. Values shown are the steady-state results.</p>
+        <div class="row">
+          <button class="btn primary" type="button" data-zoom="diagram.png" data-w="2000" data-label="Block diagram">Open full size</button>
+          <a class="btn" href="diagram.png" download="hydrokinetic_block_diagram.png">Save PNG</a>
+        </div>
+      </div></div></div>
+    </li>
+
+
+    <li class="item reveal" data-id="try">
+      <button class="head" type="button" aria-expanded="false" aria-controls="p-try">
+        <span class="titles"><span class="title">Try your own numbers</span><span class="sub">Change the inputs and watch power, protection and battery results update</span></span>
+        <span class="tag">Interactive</span>
+        <svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg>
+      </button>
+      <div class="panel" id="p-try" inert><div><div class="body" id="try-root">
+        <p class="note">Every value starts as in the Simulink model. Type your own numbers, or pick a scenario. Results follow the same equations as the model, one second at a time.</p>
+        <div class="presets" role="group" aria-label="Example scenarios">
+          <button class="chip" type="button" data-preset="base" aria-pressed="false">Your model</button>
+          <button class="chip" type="button" data-preset="lowflow" aria-pressed="false">Falling flow</button>
+          <button class="chip" type="button" data-preset="overcurrent" aria-pressed="false">Overcurrent</button>
+          <button class="chip" type="button" data-preset="early" aria-pressed="false">Generator stops early</button>
+        </div>
+        <form id="try-form" novalidate aria-label="Model inputs"></form>
+        <p class="banner" id="try-banner" role="status" hidden></p>
+        <div class="stages" id="try-stages" aria-live="polite"></div>
+        <div class="charts">
+          <figure><figcaption>Power to the bus (kW)</figcaption><canvas id="ch-power" role="img" aria-label="Electrical power over the run"></canvas><p class="legend">Dashed grey line: generator output before protection.</p></figure>
+          <figure><figcaption>Battery state of charge (%)</figcaption><canvas id="ch-soc" role="img" aria-label="Battery state of charge over the run"></canvas></figure>
+          <figure><figcaption>Total generated energy (kWh)</figcaption><canvas id="ch-energy" role="img" aria-label="Total generated energy over the run"></canvas></figure>
+        </div>
+        <div class="row"><button class="btn primary" type="button" id="try-csv" hidden>Save results (CSV)</button></div>
+        <p class="status" id="try-status" role="status"></p>
+        <p class="fine">Steady flow and pressure are assumed unless the end-of-run flow differs. After the generator stops, the battery supplies the DC load. This is a JavaScript copy of the model's equations, not a Simulink run.</p>
+      </div></div></div>
+    </li>
+
+
+    <li class="item reveal" data-id="generator">
+      <button class="head" type="button" aria-expanded="false" aria-controls="p-generator">
+        <span class="titles"><span class="title">Generator outputs</span><span class="sub">Power, voltage, current and total energy over one hour</span></span>
+        <span class="tag">Chart</span>
+        <svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg>
+      </button>
+      <div class="panel" id="p-generator" inert><div><div class="body">
+        <button class="shot" type="button" data-zoom="generator.png" data-w="1300" data-label="Generator outputs" aria-label="Open the generator charts full size"><img src="generator.png" alt="Four charts over 60 minutes: generator power flat at 9.375 kilowatts, voltage flat at 120 volts below the 150 volt limit, current flat at 78.1 amps below the 90 amp limit, and total energy rising to 9.375 kilowatt-hours." loading="lazy"></button>
+        <dl class="spec">
+          <dt>Power</dt><dd>9.375 kW</dd>
+          <dt>Voltage</dt><dd>120 V (limit 150 V)</dd>
+          <dt>Current</dt><dd>78.1 A (limit 90 A)</dd>
+          <dt>Energy, 60 min</dt><dd>9.375 kWh</dd>
+        </dl>
+        <p class="fine">Charts reproduce the model's equations in Python. They are not exported scope data.</p>
+        <div class="row">
+          <button class="btn primary" type="button" data-zoom="generator.png" data-w="1300" data-label="Generator outputs">Open full size</button>
+          <a class="btn" href="generator.png" download="hydrokinetic_generator_outputs.png">Save PNG</a>
+        </div>
+      </div></div></div>
+    </li>
+
+    <li class="item reveal" data-id="battery">
+      <button class="head" type="button" aria-expanded="false" aria-controls="p-battery">
+        <span class="titles"><span class="title">Battery storage</span><span class="sub">Charging, discharging and state of charge</span></span>
+        <span class="tag">Chart</span>
+        <svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg>
+      </button>
+      <div class="panel" id="p-battery" inert><div><div class="body">
+        <button class="shot" type="button" data-zoom="battery.png" data-w="1300" data-label="Battery storage" aria-label="Open the battery charts full size"><img src="battery.png" alt="Three charts over 60 minutes: battery power at plus 38.9 watts then minus 30 watts after minute 30, state of charge rising from 50 to 59 percent then falling to 52.1 percent, and stored energy peaking at 0.1274 kilowatt-hours." loading="lazy"></button>
+        <dl class="spec">
+          <dt>0 to 30 min</dt><dd>charging at 38.9 W, SOC 50% to 59%</dd>
+          <dt>30 to 60 min</dt><dd>discharging at 30 W, SOC to 52.1%</dd>
+          <dt>Capacity</dt><dd>0.216 kWh (12 V, 18 Ah)</dd>
+        </dl>
+        <p class="fine">The generator is switched off at 30 minutes, so the battery supplies the 30 W DC load.</p>
+        <div class="row">
+          <button class="btn primary" type="button" data-zoom="battery.png" data-w="1300" data-label="Battery storage">Open full size</button>
+          <a class="btn" href="battery.png" download="hydrokinetic_battery_outputs.png">Save PNG</a>
+        </div>
+      </div></div></div>
+    </li>
+
+    <li class="item reveal" data-id="protection">
+      <button class="head" type="button" aria-expanded="false" aria-controls="p-protection">
+        <span class="titles"><span class="title">Protection test</span><span class="sub">Flow ramped down until the low-flow trip shuts the generator off</span></span>
+        <span class="tag">Chart</span>
+        <svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg>
+      </button>
+      <div class="panel" id="p-protection" inert><div><div class="body">
+        <button class="shot" type="button" data-zoom="protection.png" data-w="1300" data-label="Protection test" aria-label="Open the protection test charts full size"><img src="protection.png" alt="Three charts over 60 minutes: water flow falling below the 0.41667 minimum at 32.6 minutes, electrical power dropping to zero after the trip, and total energy levelling off at 4.46 kilowatt-hours." loading="lazy"></button>
+        <dl class="spec">
+          <dt>Flow ramp</dt><dd>0.5556 down to 0.30</dd>
+          <dt>Trip</dt><dd>32.6 min, flow below 0.41667</dd>
+          <dt>Energy at 60 min</dt><dd>4.46 kWh</dd>
+        </dl>
+        <p class="fine">This scenario was added for the report. The original model keeps flow constant, so its protection never trips.</p>
+        <div class="row">
+          <button class="btn primary" type="button" data-zoom="protection.png" data-w="1300" data-label="Protection test">Open full size</button>
+          <a class="btn" href="protection.png" download="hydrokinetic_protection_test.png">Save PNG</a>
+        </div>
+      </div></div></div>
+    </li>
+
+    <li class="item reveal" data-id="model">
+      <button class="head" type="button" aria-expanded="false" aria-controls="p-model">
+        <span class="titles"><span class="title">Simulink model</span><span class="sub">Hydrokinetic_Energy_Harvesting_Model.slx</span></span>
+        <span class="tag">SLX</span>
+        <svg class="chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg>
+      </button>
+      <div class="panel" id="p-model" inert><div><div class="body">
+        <dl class="spec">
+          <dt>Saved in</dt><dd>MATLAB / Simulink R2023a</dd>
+          <dt>Stop time</dt><dd>3600 s</dd>
+          <dt>Size</dt><dd>31 KB, one root system</dd>
+        </dl>
+        <p class="note">Open it in MATLAB R2023a or newer.</p>
+        <div class="row">
+          <a class="btn primary" href="Hydrokinetic_Energy_Harvesting_Model.slx" download="Hydrokinetic_Energy_Harvesting_Model.slx">Download model</a>
+        </div>
+      </div></div></div>
+    </li>
+  </ul>
+
+  <footer class="reveal">Built from the Simulink model Hydrokinetic_Energy_Harvesting_Model. Chart values come from a Python replica of the model's equations.<br><span class="credit">Capstone project by Wesam Majed Aljabri, Yousef Mohammed Alanazi, Rami Abdullah A Najmi and Alwaled Ghassan Al Yamani. Jubail Industrial College, 2026. Supervisor: Dr. Hassan Zuhair Al Garni.</span></footer>
+</main>
+
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Full size view">
+  <div class="lb-bar"><span id="lb-title"></span><button class="lb-close" type="button" id="lb-close">Close</button></div>
+  <div class="lb-scroll"><img id="lb-img" alt=""></div>
+</div>
+
+<script src="model.js"></script>
+<script src="detector.js"></script>
+<script>
+(function () {
+  var items = document.querySelectorAll(".item");
+  items.forEach(function (it) {
+    var head = it.querySelector(".head"), panel = it.querySelector(".panel");
+    head.addEventListener("click", function () {
+      var open = !it.classList.contains("open");
+      it.classList.toggle("open", open);
+      head.setAttribute("aria-expanded", String(open));
+      panel.inert = !open;
+      if (open) document.dispatchEvent(new Event("hydro:opened"));
+      if (open) { try { history.replaceState(null, "", "#" + it.dataset.id); } catch (e) {} }
+    });
+  });
+  // Open the section named in the URL hash, e.g. #battery
+  var h = (location.hash || "").slice(1), target = h && document.querySelector('.item[data-id="' + h + '"] .head');
+  if (target) target.click();
+
+  // Lightbox
+  var lb = document.getElementById("lb"), lbImg = document.getElementById("lb-img"), lbTitle = document.getElementById("lb-title"), lastFocus = null;
+  function openLb(src, w, label) {
+    lastFocus = document.activeElement;
+    lbImg.src = src; lbImg.alt = label; lbTitle.textContent = label;
+    lbImg.style.setProperty("--lbw", (w || 1300) + "px");
+    lb.classList.add("show"); document.getElementById("lb-close").focus();
+  }
+  function closeLb() { lb.classList.remove("show"); lbImg.removeAttribute("src"); if (lastFocus) lastFocus.focus(); }
+  document.querySelectorAll("[data-zoom]").forEach(function (b) {
+    b.addEventListener("click", function () { openLb(b.dataset.zoom, Number(b.dataset.w), b.dataset.label); });
+  });
+  document.getElementById("lb-close").addEventListener("click", closeLb);
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && lb.classList.contains("show")) closeLb(); });
+
+})();
+</script>
+<script src="interactive.js"></script>
+<script src="scene.js"></script>
+</body>
+</html>
